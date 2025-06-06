@@ -12,8 +12,10 @@ interface ChatMessageProps {
 export function ChatMessage({ role, content, userPicture }: ChatMessageProps) {
   const isUser = role === 'user';
 
-  // Helper: check if content is a valid image URL
-  const isImage = typeof content === 'string' && (content.startsWith('http://') || content.startsWith('https://')) && (content.endsWith('.png') || content.endsWith('.jpg') || content.endsWith('.jpeg') || content.endsWith('.webp'));
+  // Helper: check if content is a valid image URL (support .webp and signed URLs)
+  const isImage = typeof content === 'string' &&
+    (content.startsWith('http://') || content.startsWith('https://')) &&
+    (/\.(png|jpg|jpeg|webp)(\?|$)/i.test(content));
 
   return (
     <div className={`d-flex mb-4 ${isUser ? 'justify-content-end' : 'justify-content-start'}`}>
@@ -41,7 +43,7 @@ export function ChatMessage({ role, content, userPicture }: ChatMessageProps) {
         </div>
         <div className={`${isUser ? 'bg-primary text-white' : 'bg-light'} p-3 rounded-3 shadow-sm`} style={{ maxWidth: '70%' }}>
           {isImage ? (
-            <img src={content} alt="Generated" className="img-fluid rounded mb-2" style={{ maxWidth: '100%', height: 'auto' }} />
+            <img src={content} alt="Generated preview" className="img-fluid rounded mb-2" style={{ maxWidth: '100%', height: 'auto' }} />
           ) : (
             <ReactMarkdown
               components={{
