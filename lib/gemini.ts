@@ -84,3 +84,28 @@ export async function generateImageWithHuggingFace(userPrompt: string): Promise<
     return 'Image generation failed.';
   }
 }
+
+export async function generateImageWithReplicate(userPrompt: string): Promise<string> {
+  try {
+    // Use absolute URL if running on the server
+    const isServer = typeof window === 'undefined';
+    const baseUrl = isServer
+      ? process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+      : '';
+    const response = await fetch(`${baseUrl}/api/generate-image`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: userPrompt }),
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Replicate API error:', error);
+      return 'Image generation failed.';
+    }
+    const data = await response.json();
+    return data.imageUrl || 'Image generation failed.';
+  } catch (error) {
+    console.error('Error generating image with Replicate:', error);
+    return 'Image generation failed.';
+  }
+}

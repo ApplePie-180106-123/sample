@@ -2,7 +2,7 @@ import { initTRPC, TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import superjson from 'superjson';
 import { supabase } from './supabase';
-import { generateTextResponseWithChat, generateImageResponse, generateImageWithHuggingFace } from './gemini';
+import { generateTextResponseWithChat, generateImageResponse, generateImageWithReplicate } from './gemini';
 
 const t = initTRPC.create({
   transformer: superjson,
@@ -69,7 +69,7 @@ export const appRouter = router({
         let aiResponse: string;
         try {
           if (input.generateImage) {
-            aiResponse = await generateImageWithHuggingFace(input.content);
+            aiResponse = await generateImageWithReplicate(input.content);
           } else {
             aiResponse = await generateTextResponseWithChat(input.userId, input.content);
           }

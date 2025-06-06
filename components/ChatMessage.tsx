@@ -12,6 +12,9 @@ interface ChatMessageProps {
 export function ChatMessage({ role, content, userPicture }: ChatMessageProps) {
   const isUser = role === 'user';
 
+  // Helper: check if content is a valid image URL
+  const isImage = typeof content === 'string' && (content.startsWith('http://') || content.startsWith('https://')) && (content.endsWith('.png') || content.endsWith('.jpg') || content.endsWith('.jpeg') || content.endsWith('.webp'));
+
   return (
     <div className={`d-flex mb-4 ${isUser ? 'justify-content-end' : 'justify-content-start'}`}>
       <div className={`d-flex ${isUser ? 'flex-row-reverse' : 'flex-row'} align-items-start gap-3`}>
@@ -37,15 +40,19 @@ export function ChatMessage({ role, content, userPicture }: ChatMessageProps) {
           )}
         </div>
         <div className={`${isUser ? 'bg-primary text-white' : 'bg-light'} p-3 rounded-3 shadow-sm`} style={{ maxWidth: '70%' }}>
-          <ReactMarkdown
-            components={{
-              p: ({ node, ...props }) => (
-                <p {...props} className="mb-0" style={{ whiteSpace: 'pre-wrap' }} />
-              ),
-            }}
-          >
-            {content}
-          </ReactMarkdown>
+          {isImage ? (
+            <img src={content} alt="Generated" className="img-fluid rounded mb-2" style={{ maxWidth: '100%', height: 'auto' }} />
+          ) : (
+            <ReactMarkdown
+              components={{
+                p: ({ node, ...props }) => (
+                  <p {...props} className="mb-0" style={{ whiteSpace: 'pre-wrap' }} />
+                ),
+              }}
+            >
+              {content}
+            </ReactMarkdown>
+          )}
         </div>
       </div>
     </div>
