@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import Replicate from 'replicate';
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,50 +8,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Prompt is required.' }, { status: 400 });
     }
 
-    const replicateResponse = await fetch('https://api.replicate.com/v1/predictions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        version: 'a9758cb3b1e7e3c8e6e8e7e3c8e6e8e7e3c8e6e8e7e3c8e6e8e7e3c8e6e8e7', // SDXL 1.0 version id
-        input: {
-          prompt,
-          width: 1024,
-          height: 1024,
-          guidance_scale: 7.5,
-          num_inference_steps: 30,
-        },
-      }),
+    const replicate = new Replicate({
+      auth: process.env.REPLICATE_API_TOKEN,
     });
 
-    if (!replicateResponse.ok) {
-      const error = await replicateResponse.text();
-      return NextResponse.json({ error }, { status: 500 });
-    }
+    const input = {
+      width: 768,
+      height: 768,
+      prompt,
+      refine: 'expert_ensemble_refiner',
+      apply_watermark: false,
+      num_inference_steps: 25,
+    };
 
-    const prediction = await replicateResponse.json();
-    // Wait for the prediction to complete
-    let imageUrl = null;
-    while (!imageUrl && prediction && prediction.id) {
-      const statusRes = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
-        headers: {
-          'Authorization': `Token ${process.env.REPLICATE_API_TOKEN}`,
-        },
-      });
-      const statusJson = await statusRes.json();
-      if (statusJson.status === 'succeeded') {
-        imageUrl = statusJson.output[0];
-      } else if (statusJson.status === 'failed') {
-        return NextResponse.json({ error: 'Image generation failed.' }, { status: 500 });
-      } else {
-        await new Promise((r) => setTimeout(r, 2000));
-      }
+    const output = await replicate.run(
+      'stability-ai/sdxl:7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc',
+      { input }
+    );
+
+    // output is an array of image URLs
+    const imageUrl = Array.isArray(output) ? output[0] : null;
+    if (!imageUrl) {
+      return NextResponse.json({ error: 'Image generation failed.' }, { status: 500 });
     }
 
     return NextResponse.json({ imageUrl });
   } catch (error) {
+    console.error('Replicate API error:', error);
     return NextResponse.json({ error: 'Internal server error.' }, { status: 500 });
   }
 }
