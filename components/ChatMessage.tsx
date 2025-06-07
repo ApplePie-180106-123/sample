@@ -18,37 +18,52 @@ export function ChatMessage({ role, content, userPicture }: ChatMessageProps) {
     (/\.(png|jpg|jpeg|webp)(\?|$)/i.test(content));
 
   return (
-    <div className={`d-flex mb-4 ${isUser ? 'justify-content-end' : 'justify-content-start'}`}>
-      <div className={`d-flex ${isUser ? 'flex-row-reverse' : 'flex-row'} align-items-start gap-3`}>
+    <div className={`d-flex mb-3 ${isUser ? 'justify-content-end' : 'justify-content-start'}`}
+      style={{ width: '100%' }}>
+      <div className={`d-flex ${isUser ? 'flex-row-reverse' : 'flex-row'} align-items-end gap-2 gap-sm-3`}
+        style={{ maxWidth: '80vw', width: 'fit-content', minWidth: 0 }}>
         <div className="flex-shrink-0">
           {isUser ? (
             userPicture ? (
               <img
                 src={userPicture}
                 alt="User"
-                width={40}
-                height={40}
-                className="rounded-circle"
+                width={36}
+                height={36}
+                className="rounded-circle border"
+                style={{ objectFit: 'cover' }}
               />
             ) : (
-              <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 40, height: 40 }}>
-                <User size={20} />
+              <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 36, height: 36 }}>
+                <User size={18} />
               </div>
             )
           ) : (
-            <div className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 40, height: 40 }}>
+            <div className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 36, height: 36 }}>
               AI
             </div>
           )}
         </div>
-        <div className={`${isUser ? 'bg-primary text-white' : 'bg-light'} p-3 rounded-3 shadow-sm`} style={{ maxWidth: '70%' }}>
+        <div
+          className={`${isUser ? 'bg-primary text-white' : 'bg-light'} p-2 p-sm-3 rounded-3 shadow-sm`}
+          style={{
+            display: 'inline-block',
+            maxWidth: 320,
+            minWidth: 40,
+            wordBreak: 'break-word',
+            width: 'fit-content',
+            fontSize: 16,
+            marginLeft: isUser ? 0 : 4,
+            marginRight: isUser ? 4 : 0,
+          }}
+        >
           {isImage ? (
-            <img src={content} alt="Generated preview" className="img-fluid rounded mb-2" style={{ maxWidth: '100%', height: 'auto' }} />
+            <img src={content} alt="Generated preview" className="img-fluid rounded mb-2 w-100" style={{ maxWidth: 240, height: 'auto' }} />
           ) : (
             <ReactMarkdown
               components={{
                 p: ({ node, ...props }) => (
-                  <p {...props} className="mb-0" style={{ whiteSpace: 'pre-wrap' }} />
+                  <p {...props} className="mb-0" style={{ whiteSpace: 'pre-wrap', fontSize: 16 }} />
                 ),
               }}
             >

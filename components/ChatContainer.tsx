@@ -82,12 +82,12 @@ export function ChatContainer({ resetSignal, chatId }: { resetSignal?: number, c
   }
 
   return (
-    <div className="d-flex flex-column h-100">
-      <div className="flex-grow-1 overflow-auto p-4">
+    <div className="d-flex flex-column h-100 w-100" style={{ minHeight: '100vh', background: '#f8f9fa' }}>
+      <div className="flex-grow-1 overflow-auto p-2 p-sm-3" style={{ maxHeight: 'calc(100vh - 120px)' }}>
         {(!messages || messages.length === 0) ? (
           <div className="d-flex justify-content-center align-items-center h-100">
             <div className="text-center">
-              <h3>Start a conversation</h3>
+              <h3 className="fs-5 fs-sm-4">Start a conversation</h3>
               <p className="text-muted">Send a message to begin chatting with AI</p>
             </div>
           </div>
@@ -102,12 +102,12 @@ export function ChatContainer({ resetSignal, chatId }: { resetSignal?: number, c
               />
             ))}
             {isLoading && (
-              <div className="d-flex justify-content-start mb-4">
-                <div className="d-flex align-items-start gap-3">
-                  <div className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 40, height: 40 }}>
+              <div className="d-flex justify-content-start mb-3">
+                <div className="d-flex align-items-start gap-2 gap-sm-3">
+                  <div className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 36, height: 36 }}>
                     AI
                   </div>
-                  <div className="bg-light p-3 rounded-3 shadow-sm">
+                  <div className="bg-light p-2 p-sm-3 rounded-3 shadow-sm">
                     <div className="spinner-border spinner-border-sm text-primary" role="status">
                       <span className="visually-hidden">Loading...</span>
                     </div>
@@ -120,7 +120,9 @@ export function ChatContainer({ resetSignal, chatId }: { resetSignal?: number, c
           </>
         )}
       </div>
-      <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+      <div className="sticky-bottom w-100 bg-white border-top" style={{ zIndex: 10 }}>
+        <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading} />
+      </div>
     </div>
   );
 }

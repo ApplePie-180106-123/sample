@@ -40,9 +40,9 @@ export default function Home() {
   }
 
   return (
-    <div className="vh-100 d-flex flex-column">
+    <div className="min-vh-100 d-flex flex-column bg-light">
       <Navbar onNewChat={handleNewChat} />
-      <main className="flex-grow-1 d-flex flex-column">
+      <main className="flex-grow-1 d-flex flex-column w-100 mx-auto" style={{ maxWidth: 600 }}>
         <ChatContainer resetSignal={resetSignal} chatId={chatId} />
       </main>
     </div>
