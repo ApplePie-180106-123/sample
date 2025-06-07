@@ -77,6 +77,10 @@ CREATE POLICY "Users can insert own messages"
   TO authenticated
   WITH CHECK (auth.uid()::text = user_id::text);
 
+-- Add chat_id to messages for multi-chat support
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS chat_id uuid;
+CREATE INDEX IF NOT EXISTS idx_messages_chat_id ON messages(chat_id);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_messages_user_id ON messages(user_id);
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);

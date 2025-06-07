@@ -6,14 +6,14 @@ import { trpc } from '@/lib/trpc-client';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 
-export function ChatContainer() {
+export function ChatContainer({ resetSignal, chatId }: { resetSignal?: number, chatId: string }) {
   const { user } = useUser();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const { data: messages, refetch } = trpc.getMessages.useQuery(
-    { userId: user?.sub || '' },
-    { enabled: !!user?.sub }
+    { userId: user?.sub || '', chatId },
+    { enabled: !!user?.sub && !!chatId }
   );
 
   const sendMessageMutation = trpc.sendMessage.useMutation({
@@ -28,15 +28,18 @@ export function ChatContainer() {
   });
 
   const handleSendMessage = async (content: string, generateImage = false) => {
-    if (!user?.sub) return;
+    if (!user?.sub || !chatId) return;
 
     setIsLoading(true);
     try {
-      await sendMessageMutation.mutateAsync({
+      console.log('Sending message:', { userId: user.sub, chatId, content, generateImage });
+      const response = await sendMessageMutation.mutateAsync({
         userId: user.sub,
+        chatId,
         content,
         generateImage,
       });
+      console.log('sendMessage response:', response);
     } catch (error) {
       console.error('Error sending message:', error);
       setIsLoading(false);
@@ -46,6 +49,26 @@ export function ChatContainer() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    if (resetSignal !== undefined) {
+      refetch();
+    }
+  }, [resetSignal]);
+
+  // Refetch messages after sending a message
+  useEffect(() => {
+    if (sendMessageMutation.isSuccess) {
+      refetch();
+    }
+  }, [sendMessageMutation.isSuccess, refetch]);
+
+  // Refetch messages when chatId changes
+  useEffect(() => {
+    if (chatId) {
+      refetch();
+    }
+  }, [chatId, refetch]);
 
   if (!user) {
     return (
@@ -61,7 +84,7 @@ export function ChatContainer() {
   return (
     <div className="d-flex flex-column h-100">
       <div className="flex-grow-1 overflow-auto p-4">
-        {messages?.length === 0 ? (
+        {(!messages || messages.length === 0) ? (
           <div className="d-flex justify-content-center align-items-center h-100">
             <div className="text-center">
               <h3>Start a conversation</h3>
@@ -70,7 +93,7 @@ export function ChatContainer() {
           </div>
         ) : (
           <>
-            {messages?.map((message) => (
+            {messages.map((message) => (
               <ChatMessage
                 key={message.id}
                 role={message.role}
@@ -81,7 +104,7 @@ export function ChatContainer() {
             {isLoading && (
               <div className="d-flex justify-content-start mb-4">
                 <div className="d-flex align-items-start gap-3">
-                  <div className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center\" style={{ width: 40, height: 40 }}>
+                  <div className="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 40, height: 40 }}>
                     AI
                   </div>
                   <div className="bg-light p-3 rounded-3 shadow-sm">

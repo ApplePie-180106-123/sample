@@ -1,9 +1,9 @@
 'use client';
 
 import { useUser } from '@auth0/nextjs-auth0/client';
-import { MessageSquare, LogOut, User } from 'lucide-react';
+import { MessageSquare, LogOut, User, Plus } from 'lucide-react';
 
-export function Navbar() {
+export function Navbar({ onNewChat }: { onNewChat?: () => void }) {
   const { user, isLoading } = useUser();
 
   return (
@@ -14,9 +14,14 @@ export function Navbar() {
           <span className="fw-bold">ChatGPT Clone</span>
         </div>
 
-        <div className="navbar-nav ms-auto">
+        <div className="navbar-nav ms-auto d-flex align-items-center gap-2">
+          {onNewChat && (
+            <button className="btn btn-outline-light me-2" onClick={onNewChat} title="New Chat">
+              <Plus size={16} className="me-1" /> New Chat
+            </button>
+          )}
           {isLoading ? (
-            <div className="spinner-border spinner-border-sm text-light\" role="status">
+            <div className="spinner-border spinner-border-sm text-light" role="status">
               <span className="visually-hidden">Loading...</span>
             </div>
           ) : user ? (

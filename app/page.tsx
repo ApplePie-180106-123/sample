@@ -1,15 +1,17 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { trpc } from '@/lib/trpc-client';
 import { Navbar } from '@/components/Navbar';
 import { ChatContainer } from '@/components/ChatContainer';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function Home() {
   const { user, isLoading } = useUser();
-
   const upsertUserMutation = trpc.upsertUser.useMutation();
+  const [resetSignal, setResetSignal] = useState(0);
+  const [chatId, setChatId] = useState(() => uuidv4());
 
   useEffect(() => {
     if (user && user.sub) {
@@ -21,6 +23,11 @@ export default function Home() {
       });
     }
   }, [user]);
+
+  const handleNewChat = () => {
+    setChatId(uuidv4());
+    setResetSignal((v) => v + 1);
+  };
 
   if (isLoading) {
     return (
@@ -34,9 +41,9 @@ export default function Home() {
 
   return (
     <div className="vh-100 d-flex flex-column">
-      <Navbar />
+      <Navbar onNewChat={handleNewChat} />
       <main className="flex-grow-1 d-flex flex-column">
-        <ChatContainer />
+        <ChatContainer resetSignal={resetSignal} chatId={chatId} />
       </main>
     </div>
   );

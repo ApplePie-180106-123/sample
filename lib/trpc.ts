@@ -13,13 +13,14 @@ export const publicProcedure = t.procedure;
 
 export const appRouter = router({
   getMessages: publicProcedure
-    .input(z.object({ userId: z.string() }))
+    .input(z.object({ userId: z.string(), chatId: z.string() }))
     .query(async ({ input }) => {
       try {
         const { data, error } = await supabase
           .from('messages')
           .select('*')
           .eq('user_id', input.userId)
+          .eq('chat_id', input.chatId)
           .order('created_at', { ascending: true });
 
         if (error) {
@@ -43,6 +44,7 @@ export const appRouter = router({
   sendMessage: publicProcedure
     .input(z.object({
       userId: z.string(),
+      chatId: z.string(),
       content: z.string(),
       generateImage: z.boolean().optional().default(false),
     }))
@@ -53,6 +55,7 @@ export const appRouter = router({
           .from('messages')
           .insert({
             user_id: input.userId,
+            chat_id: input.chatId,
             role: 'user',
             content: input.content,
           });
@@ -71,7 +74,7 @@ export const appRouter = router({
           if (input.generateImage) {
             aiResponse = await generateImageWithReplicate(input.content);
           } else {
-            aiResponse = await generateTextResponseWithChat(input.userId, input.content);
+            aiResponse = await generateTextResponseWithChat(input.userId + ':' + input.chatId, input.content);
           }
         } catch (error) {
           console.error('Error generating AI response:', error);
@@ -83,6 +86,7 @@ export const appRouter = router({
           .from('messages')
           .insert({
             user_id: input.userId,
+            chat_id: input.chatId,
             role: 'assistant',
             content: aiResponse,
           });
