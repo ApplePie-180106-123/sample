@@ -10,6 +10,8 @@ export function ChatContainer({ resetSignal, chatId }: { resetSignal?: number, c
   const { user } = useUser();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  // Add state for pending user message
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
 
   const { data: messages, refetch } = trpc.getMessages.useQuery(
     { userId: user?.sub || '', chatId },
@@ -20,10 +22,12 @@ export function ChatContainer({ resetSignal, chatId }: { resetSignal?: number, c
     onSuccess: () => {
       refetch();
       setIsLoading(false);
+      setPendingMessage(null); // Clear pending message after AI response
     },
     onError: (error) => {
       console.error('Error sending message:', error);
       setIsLoading(false);
+      setPendingMessage(null); // Clear pending message on error
     },
   });
 
@@ -31,6 +35,7 @@ export function ChatContainer({ resetSignal, chatId }: { resetSignal?: number, c
     if (!user?.sub || !chatId) return;
 
     setIsLoading(true);
+    setPendingMessage(content); // Set pending message immediately
     try {
       console.log('Sending message:', { userId: user.sub, chatId, content, generateImage });
       const response = await sendMessageMutation.mutateAsync({
@@ -43,12 +48,13 @@ export function ChatContainer({ resetSignal, chatId }: { resetSignal?: number, c
     } catch (error) {
       console.error('Error sending message:', error);
       setIsLoading(false);
+      setPendingMessage(null);
     }
   };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, pendingMessage, isLoading]);
 
   useEffect(() => {
     if (resetSignal !== undefined) {
@@ -101,6 +107,15 @@ export function ChatContainer({ resetSignal, chatId }: { resetSignal?: number, c
                 userPicture={user.picture || undefined}
               />
             ))}
+            {/* Optimistically render the pending user message */}
+            {pendingMessage && (
+              <ChatMessage
+                key="pending-user-msg"
+                role="user"
+                content={pendingMessage}
+                userPicture={user.picture || undefined}
+              />
+            )}
             {isLoading && (
               <div className="d-flex justify-content-start mb-3">
                 <div className="d-flex align-items-start gap-2 gap-sm-3">
